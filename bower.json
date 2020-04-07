@@ -1,0 +1,29 @@
+{
+  "name": "union_live_app",
+  "description": "Union Live is an online merch store that provides all best quality merchandise at great prices of your favourite artists in the one best place. Union Live has been working for the music lover's for a long time by having the merch of your favourite artists you can come closer to the artists you love.",
+  "main": "server.js",
+  "authors": [
+    "muhammadshahrukhkhan <developer_shahrukh@hotmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "index.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "client/libs/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.8",
+    "angular-spinner": "^1.0.1",
+    "bootstrap": "^3.3.7",
+    "jasny-bootstrap": "^3.1.3",
+    "moment-timezone": "^0.5.13",
+    "components-font-awesome": "^4.7.0",
+    "lodash": "^4.17.4",
+    "air-datepicker": "^2.2.3",
+    "ng-file-upload": "^12.2.13"
+  }
+}

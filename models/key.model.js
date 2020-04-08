@@ -17,7 +17,7 @@ const KeySchema = new mongoose.Schema({
 		default: makeKey(50),
 		unique: true
 	},
-	session_token: {
+	session_token: { // user ID
 		type:String, 
 		unique: true
 	},

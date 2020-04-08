@@ -20,12 +20,12 @@ module.exports = function(app){
     if (err) {
       throw err
     } else {
-      console.log(`Database Connected ✔️`);
+      console.log(`✔️ Database Connected`);
     }
   });
 
   mongoose.connection.on('error', function(err) {
-    console.error('MongoDB connection error: ' + err);
+    console.error('❗️ MongoDB connection error: ' + err);
     process.exit(-1);
   });
   
@@ -50,7 +50,7 @@ module.exports = function(app){
 
   // Dist Setup
   app.use(express.static(path.join(__dirname, 'images')));
-  app.use(express.static(path.join(__dirname, 'dist/App/')));
+  app.use(express.static(path.join(__dirname, 'build/')));
   app.use(bodyParser.urlencoded({
     limit: '50mb',
     extended: false

@@ -1,30 +1,28 @@
 'use strict';
 const mongoose = require('mongoose');
 
-const SessionSchema = new mongoose.Schema({
-	user: {
+const ConnectionSchema = new mongoose.Schema({
+	user: { // session_token
 		type: String,
 		required: true
 	},
-	name: {
+	socket: {
 		type: String,
 		required: true
 	},
-	system: {
+	room: {
+		type: String,
+		required: true
+	},
+	system: { 
 		type: String,
 		required: true,
 		enum: ['sply', 'lyve']
 	},
-	role: {
-		type: String,
-		required: true,
-		enum: ['user', 'admin', 'marketing', 'provider']
-	}, 
-	meta: String,
     createdt: {
         type: Date,
         default: Date.now
     }
 }); 
 
-module.exports = mongoose.model('Session', SessionSchema);
+module.exports = mongoose.model('Connection', ConnectionSchema);

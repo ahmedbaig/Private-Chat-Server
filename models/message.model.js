@@ -22,6 +22,13 @@ const MessageSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	name: {
+		type: String,
+		required: true
+	},
+	meta: {
+		type:String
+	},
     createdt: {
         type: Date,
         default: Date.now

@@ -1,32 +1,50 @@
 'use strict';
 
-const ConnectionModel = require('../../models/connection.model');
+const MessageModel = require('../../models/message.model');
 const SessionModel = require('../../models/session.model');
-
-function handleError(message){
-  res.send({
-    success: false,
-    message
-  })
-}
-
+ 
+// IF isRoom is true, the FROM: room
+// IF isRoom is false, the TO: room
 exports.livechatMessages = async function (req, res){
 	try{
-		if(req.query.room!=null&&req.query.room!=undefined&&req.query.room!=""){
-			id = new RegExp(["^", req.query.room, "$"].join(""), "i");
+		if(req.query.room!=null&&req.query.room!=undefined&&req.query.room!=""){ 
+
+			let id = new RegExp(["^", req.query.room, "$"].join(""), "i");
+
 			let queryStr = { '$or': [ { to: id }, { from: id } ] }
+
 			if(req.query.startFrom!=null&&req.query.startFrom!=undefined&&req.query.startFrom!=""){
 				queryStr['streamTime'] = { '$gte': req.query.startFrom }
 			}
+			console.log(queryStr)
 			MessageModel.find(queryStr, (err, session)=>{
 				var messagesSession = session;
-			  }).sort({ createdt: 1 }).then(function (messagesSession) { 
-				return { messages: messagesSession, success: true }
+			  }).sort({ createdt: 1 }).then(function (messagesSession) {  
+				return res.send({ messages: messagesSession, success: true })
 			  })
+		}else{ 
+			return res.send({ message: "Room ID was not given", success: true }) 
+		}
+	}catch(e){ 
+		return res.send({ message: e.message, success: false })
+	}
+}
+
+exports.insertLiveChatMessage = async function (req, res){
+	try{
+		req.body['name'] = req.user.name
+		req.body['meta'] = req.user.meta
+		if(req.auth.write == true){
+			MessageModel.create(req.body, (err, message)=>{
+				res.send({
+					success: true,
+					message
+				})
+			})
 		}else{
-			handleError("Room ID was not given")
+		return res.send({ message: "Write authorization blocked. Contact Admin.", success: false }) 
 		}
 	}catch(e){
-		handleError(e.message)
+		return res.send({ message: e.message, success: false }) 
 	}
 }

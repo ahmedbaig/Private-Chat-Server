@@ -2,9 +2,6 @@
 const mongoose = require('mongoose');
 
 const RoomSchema = new mongoose.Schema({
-	users: [ // socket IDs
-		String
-	],
 	roomName: {
 		type: String,
 		required: true

@@ -22,15 +22,15 @@ const KeySchema = new mongoose.Schema({
 		unique: true
 	},
 	access: {
-		type:String,
+		type:Boolean,
 		default: false	
 	},
 	write: {
-		type:String,
+		type:Boolean,
 		default: false
 	},
 	read: {
-		type:String,
+		type:Boolean,
 		default: false
 	},
     createdt: {

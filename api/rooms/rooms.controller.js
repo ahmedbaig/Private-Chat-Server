@@ -36,11 +36,11 @@ exports.createRoom = async function (req, res) {
 			}
 			RoomModel.create(req.body.room).then(newroom => {
 				// Create Connection from user to socket
-				ConnectionModel.create({
-					user: req.auth.session_token,
-					room: newroom._id,
-					system: newroom.system
-				}, (err, connection) => { })
+				// ConnectionModel.create({
+				// 	user: req.auth.session_token,
+				// 	room: newroom._id,
+				// 	system: newroom.system
+				// }, (err, connection) => { })
 				res.send({ user: req.user, room: newroom, success: true })
 			})
 		} else {

@@ -6,6 +6,10 @@ const ConnectionSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	socket: {
+		type: String,
+		required: true
+	},
 	room: {
 		type: String,
 		required: true

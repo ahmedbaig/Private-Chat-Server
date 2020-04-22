@@ -10,26 +10,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "start": "concurrently \"node server\" \"ng serve --proxy-config proxy.config.json\"",
-    "start:dev": "node server",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "start": "node server",
+    "start:dev": "node server"
   },
   "dependencies": {
-    "@angular/animations": "^6.1.0",
-    "@angular/cli": "^7.3.8",
-    "@angular/common": "^6.1.0",
-    "@angular/compiler": "^6.1.0",
-    "@angular/core": "^6.1.4",
-    "@angular/forms": "^6.1.0",
-    "@angular/http": "^6.1.0",
-    "@angular/platform-browser": "^6.1.4",
-    "@angular/platform-browser-dynamic": "^6.1.0",
-    "@angular/router": "^6.1.10",
-    "@ng-bootstrap/ng-bootstrap": "^3.2.0",
-    "@ngx-loading-bar/http-client": "^2.2.0",
     "ajv": "^6.0.0",
     "assert": "^2.0.0",
     "body-parser": "^1.18.2",

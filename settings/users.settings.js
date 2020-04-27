@@ -6,71 +6,76 @@ const SessionModel = require('../models/session.model');
 const users = [];
 
 const addUser = ({ socket, authorization_token, room }) => {
-  try {
-    KeyModel.findOne({ authorization_token }, (err, key) => {
-      if (err) {
-        return { error: err }
-      } else if (key == null) {
-        return { error: "Unauthorized Access!" }
-      } else {
-        const myUser = SessionModel.findById(key.session_token)
-        if (room == null) {
-          return { error: "Room ID is required" }
-        } else {
-          RoomModel.findById(room, (err, existingroom) => {
-            if (err) {
-              return { error: err }
-            } else if (existingroom == null) {
-              return { error: "Room not found." }
-            } else {
-              const existingUser = users.find((user) => user.room === room && user.authorization_token === authorization_token);
+    try {
+        return new Promise((resolve, reject) => {
+            console.log(socket, authorization_token, room)
+            KeyModel.findOne({ authorization_token }, (err, key) => {
+                if (err) {
+                    reject({ error: err })
+                } else if (key == null) {
+                    reject({ error: "Unauthorized Access!" })
+                } else {
+                    if (room == null) {
+                        reject({ error: "Room ID is required" })
+                    } else {
+                        RoomModel.findById(room, (err, existingroom) => {
+                            if (err) {
+                                reject({ error: err })
+                            } else if (existingroom == null) {
+                                reject({ error: "Room not found." })
+                            } else {
+                                console.log("Adding new user to room", existingroom.name)
 
-              if (existingUser) return { error: 'User is taken.' };
+                                const existingUser = users.find((user) => user.room === room && user.authorization_token === authorization_token);
 
-              const user = { socket, authorization_token, room, name: myUser.name };
+                                if (existingUser) reject({ error: 'User is taken.' });
+                                SessionModel.findById(key.session_token, (err, myUser) => {
+                                    const user = { socket, authorization_token, room, name: myUser.name };
+                                    users.push(user);
+                                    createConnection({ socket, session_token: key.session_token, room, system: existingroom.system })
+                                    resolve({ user });
+                                })
 
-              users.push(user);
-              createConnection({ socket, session_token: key.session_token, room, system: existingroom.system })
-              
-              return { user };
-            }
-          })
-        }
-      }
-    })
-  } catch (err) {
-    return { error: err.message, success: false }
-  }
+                            }
+                        })
+                    }
+                }
+            })
+        })
+    } catch (err) {
+        return { error: err.message, success: false }
+    }
 }
 
 const removeUser = (socket) => {
-  try {
-    const index = users.findIndex((user) => user.socket === socket);
-    if (index !== -1) return users.splice(index, 1)[0];
-    removeConnection(socket)
-  } catch (err) {
-    return { error: err.message, success: false }
-  }
+    try {
+        removeConnection(socket)
+        const index = users.findIndex((user) => user.socket === socket);
+        if (index !== -1) return users.splice(index, 1)[0];
+    } catch (err) {
+        return { error: err.message, success: false }
+    }
 }
 
-const getUser = (id) => users.find((user) => user.id === id);
+const getUser = (id) => users.find((user) => user.socket === id);
 
 const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
 const createConnection = ({ socket, session_token, room, system }) => {
-  ConnectionModel.create({
-    user: session_token,
-    socket: socket,
-    room: room,
-    system: system
-  }, (err, connection) => {
-    console.log("NEW CONNECTION MADE: ", connection)
-  })
+    ConnectionModel.create({
+        user: session_token,
+        socket: socket,
+        room: room,
+        system: system
+    }, (err, connection) => {
+        console.log("NEW CONNECTION MADE: ", connection)
+    })
 }
 
 const removeConnection = (socket) => {
-  ConnectionModel.remove({ socket }, (err) => {
-    console.log("CONNECTION REMOVED")
-  })
+    console.log("REMOVING CONNECTION")
+    ConnectionModel.remove({ socket }, (err) => {
+        console.log("CONNECTION REMOVED")
+    })
 }
 module.exports = { addUser, removeUser, getUser, getUsersInRoom };

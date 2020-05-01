@@ -2,7 +2,112 @@
 
 const KeyModel = require('../models/key.model');
 const SessionModel = require('../models/session.model');
+const PasswordModel = require('../models/password.model');
 
+exports.createAdmin = async function(req, res) {
+    try {
+        if (req.body.auth_key == process.env.PRIVATE_AUTH_KEY) {
+            await PasswordModel.findOne({ user: req.body.user }, async(err, user) => {
+                if (err) {
+                    res.send({
+                        success: false,
+                        message: e
+                    })
+                } else if (user == null) {
+                    await PasswordModel.create(req.body).then(user => {
+                        res.send({
+                            success: true,
+                            user
+                        })
+                    })
+                } else {
+                    res.send({
+                        success: false,
+                        message: "User already taken"
+                    })
+                }
+            })
+        }
+    } catch (e) {
+        res.send({
+            success: false,
+            message: e.message
+        })
+    }
+}
+
+exports.loginAdmin = async function(req, res) {
+    try {
+        if (req.body != undefined || req.body != "{}") {
+            var { user, password } = req.body;
+            PasswordModel.findOne({
+                user: user,
+            }, async function(err, user) {
+                if (err) { res.send({ success: false, message: err }) } else if (!user) {
+                    //console.log(user);
+                    return res.send({
+                        success: false,
+                        message: 'This user is not registered.'
+                    });
+                } else {
+                    const variation = user;
+                    if (!user.authenticate(password)) {
+                        return res.send({
+                            success: false,
+                            message: 'This password is not correct.'
+                        });
+                    } else {
+                        await SessionModel.findOne({ user: req.body.user }, async(err, user) => {
+                            if (err) {
+                                res.send({
+                                    success: false,
+                                    message: e
+                                })
+                            } else if (user == null) {
+                                res.send({
+                                    success: false,
+                                    message: "User session not found"
+                                })
+                            } else {
+                                await KeyModel.findOne({ session_token: user._id }, async(err, key) => {
+                                    if (err) {
+                                        res.send({
+                                            success: false,
+                                            message: err
+                                        })
+                                    }
+                                    if (key == null) {
+                                        res.send({
+                                            success: false,
+                                            message: "Authorization Token was not generated",
+                                            session: user
+                                        })
+                                    }
+                                    res.send({
+                                        success: true,
+                                        message: "User session already exists.",
+                                        authorization_token: key.authorization_token,
+                                        session: user
+                                    })
+                                })
+                            }
+                        })
+                    }
+                }
+            });
+        } else {
+            return res.send({
+                success: false,
+                message: "Please enter email and password"
+            })
+        }
+    } catch (e) {
+        res.send({
+            success: false,
+            message: e.message
+        })
+    }
+}
 
 exports.createSession = async function(req, res) {
     try {
@@ -112,6 +217,23 @@ exports.createToken = async function(req, res) {
 exports.deleteToken = async function(req, res) {
     try {
         if (req.body.auth_key == process.env.PRIVATE_AUTH_KEY) {
+            await KeyModel.findOne({ authorization_token }, (err, key) => {
+                if (key == null) {
+                    res.send({
+                        success: false,
+                        message: 'Authorization Error! Key not found'
+                    })
+                } else {
+                    SessionModel.remove({ _id: key.session_token }, (err) => {
+                        if (err) {
+                            res.send({
+                                success: true,
+                                message: err
+                            })
+                        }
+                    })
+                }
+            })
             await KeyModel.remove({ authorization_token: req.body.authorization_token }, (err) => {
                 if (err) {
                     res.send({

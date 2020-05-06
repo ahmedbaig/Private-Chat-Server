@@ -28,10 +28,14 @@ const addUser = ({ socket, authorization_token, room }) => {
 
                                 const existingUser = users.find((user) => user.room === room && user.authorization_token === authorization_token);
 
-                                if (existingUser) reject({ error: 'User is taken.' });
                                 SessionModel.findById(key.session_token, (err, myUser) => {
-                                    const user = { socket, authorization_token, room, name: myUser.name };
-                                    users.push(user);
+                                    const user = { socket, authorization_token, room, name: myUser.name, meta: myUser.meta, _id: myUser._id };
+                                    if (!existingUser) {
+                                        users.push(user);
+                                    }
+                                    // else {
+                                    //     reject({ error: 'User is taken.' });
+                                    // }
                                     createConnection({ socket, session_token: key.session_token, room, system: existingroom.system })
                                     resolve({ user });
                                 })

@@ -28,7 +28,7 @@ io.on('connect', (socket) => {
 
             socket.join(user.room);
 
-            socket.emit('message', { user: 'LYVE ADMIN', text: `${user.name}, welcome to room ${user.room}.` });
+            socket.emit('message', { user: 'LYVE ADMIN', text: `${user.name}, welcome to chat room.`, userData: user });
             socket.broadcast.to(user.room).emit('message', { user: 'admin', text: `${user.name} has joined!` });
 
             io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
@@ -38,6 +38,12 @@ io.on('connect', (socket) => {
             if (error) return callback(error);
         });
     });
+
+    socket.on('room', () => {
+        const user = getUser(socket.id);
+
+        io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
+    })
 
     socket.on('disconnect', () => {
         const user = removeUser(socket.id);
@@ -50,9 +56,12 @@ io.on('connect', (socket) => {
 
     socket.on('sendMessage', ({ message, streamTime }, callback) => {
         const user = getUser(socket.id);
-
-        io.to(user.room).emit('message', { user: user.name, text: message });
-        addMessage({ socket: socket.id, message, streamTime })
-        callback();
+        if (message.length == 0 || message == null || message == undefined) {
+            socket.emit('message', { user: 'LYVE ADMIN', text: `${user.name}, you can't send blank messages to chat room.`, userData: user });
+        } else {
+            io.to(user.room).emit('message', { user: user.name, text: message, userData: user });
+            addMessage({ socket: socket.id, message, streamTime })
+            callback();
+        }
     });
 });

@@ -4,7 +4,6 @@ const ConnectionModel = require('../models/connection.model');
 const MessageModel = require('../models/message.model');
 
 const addMessage = ({ socket, message, streamTime }) => {
-    console.log(socket, message, streamTime)
     ConnectionModel.findOne({ socket }, (err, connection) => {
         SessionModel.findById(connection.user, (err, user) => {
             MessageModel.create({

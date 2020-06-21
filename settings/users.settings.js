@@ -2,6 +2,7 @@ const RoomModel = require('../models/room.model');
 const KeyModel = require('../models/key.model');
 const ConnectionModel = require('../models/connection.model');
 const SessionModel = require('../models/session.model');
+const { connection } = require('mongoose');
 
 const users = [];
 
@@ -24,19 +25,21 @@ const addUser = ({ socket, authorization_token, room }) => {
                             } else if (existingroom == null) {
                                 reject({ error: "Room not found." })
                             } else {
-                                console.log("Adding new user to room", existingroom.name)
+                                console.log("Adding new user to room", existingroom._id, existingroom.roomName)
 
-                                const existingUser = users.find((user) => user.room === room && user.authorization_token === authorization_token);
-
+                                const existingUser = users.find((user) => user.socket === socket);
                                 SessionModel.findById(key.session_token, (err, myUser) => {
                                     const user = { socket, authorization_token, room, name: myUser.name, meta: myUser.meta, _id: myUser._id };
                                     if (!existingUser) {
                                         users.push(user);
+                                        createConnection({ socket, session_token: key.session_token, room, system: existingroom.system })
+                                    } else {
+                                        // reject({ error: 'User is taken.' });
+                                        // Same User so updating room
+                                        const index = users.findIndex((user) => user.socket === socket);
+                                        users[index].room = room
+                                        updateConnection({ socket, session_token: key.session_token, room })
                                     }
-                                    // else {
-                                    //     reject({ error: 'User is taken.' });
-                                    // }
-                                    createConnection({ socket, session_token: key.session_token, room, system: existingroom.system })
                                     resolve({ user });
                                 })
 
@@ -53,8 +56,8 @@ const addUser = ({ socket, authorization_token, room }) => {
 
 const removeUser = (socket) => {
     try {
-        removeConnection(socket)
         const index = users.findIndex((user) => user.socket === socket);
+        removeConnection(users[index])
         if (index !== -1) return users.splice(index, 1)[0];
     } catch (err) {
         return { error: err.message, success: false }
@@ -72,14 +75,39 @@ const createConnection = ({ socket, session_token, room, system }) => {
         room: room,
         system: system
     }, (err, connection) => {
-        console.log("NEW CONNECTION MADE: ", connection)
+        console.log("NEW CONNECTION MADE: ", connection.socket)
     })
 }
 
-const removeConnection = (socket) => {
-    console.log("REMOVING CONNECTION")
-    ConnectionModel.remove({ socket }, (err) => {
+const updateConnection = ({ socket, session_token, room }) => {
+    ConnectionModel.update({
+        user: session_token,
+        socket: socket
+    }, {
+        room: room,
+    }, (err, connection) => {
+        console.log("UPDATE TO CONNECTION MADE: ", socket)
+    })
+}
+
+const removeConnection = (user) => {
+    console.log("REMOVING CONNECTION", user.socket)
+    ConnectionModel.remove({ socket: user.socket }, (err) => {
         console.log("CONNECTION REMOVED")
     })
 }
+
+const emptyConnection = () => {
+    ConnectionModel.find({}).then(connections => {
+        connections.forEach(connection => {
+            // console.log(connection._id)
+            ConnectionModel.remove({ _id: connection._id }, () => {
+                // console.log("CONNECTION REMOVED")
+
+            })
+        })
+    })
+}
+emptyConnection();
+
 module.exports = { addUser, removeUser, getUser, getUsersInRoom };

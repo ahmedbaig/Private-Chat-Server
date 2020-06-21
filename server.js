@@ -22,14 +22,15 @@ const server = app.listen(PORT, function() {
 const io = require('socket.io').listen(server)
 
 io.on('connect', (socket) => {
-    console.log(`✔️ Socket Server Started`);
+    console.log(`✔️ Socket Started`, socket.id);
+
     socket.on('join', ({ authorization_token, room }, callback) => {
         addUser({ socket: socket.id, authorization_token, room }).then(({ user }) => {
 
             socket.join(user.room);
 
-            socket.emit('message', { user: 'LYVE ADMIN', text: `${user.name}, welcome to chat room.`, userData: user });
-            socket.broadcast.to(user.room).emit('message', { user: 'admin', text: `${user.name} has joined!` });
+            socket.emit('message', { user: 'ADMIN', text: `${user.name}, welcome to chat room.`, userData: user, t: Date.now(), i: true, id: user._id });
+            socket.broadcast.to(user.room).emit('message', { user: 'ADMIN', text: `${user.name} has joined!`, t: Date.now(), i: true, id: user._id });
 
             io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
 
@@ -49,19 +50,22 @@ io.on('connect', (socket) => {
         const user = removeUser(socket.id);
 
         if (user) {
-            io.to(user.room).emit('message', { user: 'LYVE ADMIN', text: `${user.name} has left.` });
+            io.to(user.room).emit('message', { user: 'ADMIN', text: `${user.name} has left.`, i: true });
             io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
         }
     })
 
-    socket.on('sendMessage', ({ message, streamTime }, callback) => {
-        const user = getUser(socket.id);
-        if (message.length == 0 || message == null || message == undefined) {
-            socket.emit('message', { user: 'LYVE ADMIN', text: `${user.name}, you can't send blank messages to chat room.`, userData: user });
-        } else {
-            io.to(user.room).emit('message', { user: user.name, text: message, userData: user });
-            addMessage({ socket: socket.id, message, streamTime })
-            callback();
+    socket.on('sendMessage', ({ message, streamTime }) => {
+        if (message != socket.id) {
+            setTimeout(() => {
+                const user = getUser(socket.id);
+                if (message == null && message == undefined) {
+                    socket.emit('message', { user: 'ADMIN', text: `${user.name}, you can't send blank messages to chat room.`, userData: user, i: true });
+                } else {
+                    io.to(user.room).emit('message', { user: user.name, text: message, userData: user, t: Date.now(), i: false });
+                    addMessage({ socket: socket.id, message, streamTime })
+                }
+            }, 1000)
         }
     });
 });

@@ -44,7 +44,6 @@ exports.loginAdmin = async function(req, res) {
                 user: user,
             }, async function(err, user) {
                 if (err) { res.send({ success: false, message: err }) } else if (!user) {
-                    //console.log(user);
                     return res.send({
                         success: false,
                         message: 'This user is not registered.'
@@ -167,7 +166,6 @@ exports.createToken = async function(req, res) {
     try {
         if (req.body.auth_key == process.env.PUBLIC_AUTH_KEY) {
             await SessionModel.findById(req.body.session_token, async(err, user) => {
-                console.log(err, user)
                 if (err) {
                     res.send({
                         success: false,

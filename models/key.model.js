@@ -1,7 +1,7 @@
 'use strict';
 const mongoose = require('mongoose');
 
-const makeKey = (length) => {
+let makeKey = (length) => {
 	var result           = '';
 	var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 	var charactersLength = characters.length;

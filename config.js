@@ -16,19 +16,19 @@ const moment = require('moment');
 
 module.exports = function(app){
   // Mongo Connections
-  mongoose.connect(`mongodb://${process.env.MLAB_USER}:${process.env.MLAB_PASSWORD}${process.env.MLAB_URL}`,(err, db) => {
-    if (err) {
-      throw err
-    } else {
+  let uri = `mongodb+srv://${process.env.MLAB_USER}:${process.env.MLAB_PASSWORD}${process.env.MLAB_URL}`
+  mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+    .then(() => {
       console.log(`✔️ Database Connected`);
-    }
-  });
+    })
+    .catch(err => {
 
-  mongoose.connection.on('error', function(err) {
-    console.error('❗️ MongoDB connection error: ' + err);
-    process.exit(-1);
-  });
-  
+      console.error('❗️ MongoDB connection error: ' + err);
+      process.exit(-1);
+    })
   // CORS STUFF
   app.use(function(req, res, next) {
     // Website you wish to allow to connect

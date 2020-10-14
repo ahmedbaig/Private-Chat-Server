@@ -62,8 +62,10 @@ io.on('connect', (socket) => {
                 if (message == null && message == undefined) {
                     socket.emit('message', { user: 'ADMIN', text: `${user.name}, you can't send blank messages to chat room.`, userData: user, i: true });
                 } else {
-                    io.to(user.room).emit('message', { user: user.name, text: message, userData: user, t: Date.now(), i: false });
-                    addMessage({ socket: socket.id, message, streamTime })
+                    if (user.hasOwnProperty('room')) {
+                        io.to(user.room).emit('message', { user: user.name, text: message, userData: user, t: Date.now(), i: false });
+                        addMessage({ socket: socket.id, message, streamTime })
+                    }
                 }
             }, 1000)
         }

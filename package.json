@@ -32,7 +32,7 @@
         "express-jwt": "^6.0.0",
         "express-session": "^1.17.1",
         "fb": "^2.0.0",
-        "jsonwebtoken": "^8.5.1",
+        "jsonwebtoken": "^9.0.0",
         "lodash": "^4.17.20",
         "moment": "^2.29.1",
         "mongodb": "^3.6.2",
